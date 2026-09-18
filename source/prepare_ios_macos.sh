@@ -36,12 +36,31 @@ python3 - <<'PY'
 from pathlib import Path
 
 p = Path("lib/main.dart")
-s = p.read_text(encoding="utf-8")
-old = "    if (!discoveredServers.contains(text)) discoveredServers.add(text);\n"
-new = "    if (!discoveredServers.contains(text)) {\n      discoveredServers.add(text);\n    }\n"
-if old in s:
-    s = s.replace(old, new)
-p.write_text(s, encoding="utf-8")
+lines = p.read_text(encoding="utf-8").splitlines()
+out = []
+for line in lines:
+    indent = line[:len(line) - len(line.lstrip())]
+    body = line[len(indent):]
+    if body.startswith("if ("):
+        depth = 0
+        close = -1
+        for idx, ch in enumerate(body[3:], start=3):
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth -= 1
+                if depth == 0:
+                    close = idx
+                    break
+        if close >= 0:
+            tail = body[close + 1:].strip()
+            if tail and not tail.startswith("{") and tail.endswith(";"):
+                out.append(indent + body[:close + 1] + " {")
+                out.append(indent + "  " + tail)
+                out.append(indent + "}")
+                continue
+    out.append(line)
+p.write_text("\n".join(out) + "\n", encoding="utf-8")
 PY
 rm -f test/widget_test.dart
 
