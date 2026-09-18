@@ -1,0 +1,57 @@
+name: iOS unsigned build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        working-directory: source
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate and configure iOS project
+        run: |
+          chmod +x prepare_ios_macos.sh
+          ./prepare_ios_macos.sh
+
+      - name: Build release app without signing
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          APP="build/ios/iphoneos/Runner.app"
+          test -d "$APP"
+          rm -rf Payload ZlatogradTracker-unsigned.ipa
+          mkdir Payload
+          cp -R "$APP" Payload/
+          rm -rf Payload/Runner.app/_CodeSignature
+          /usr/bin/zip -qry ZlatogradTracker-unsigned.ipa Payload
+          ls -lh ZlatogradTracker-unsigned.ipa
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: zlatograd-tracker-ios-unsigned-ipa
+          path: source/ZlatogradTracker-unsigned.ipa
+          if-no-files-found: error
