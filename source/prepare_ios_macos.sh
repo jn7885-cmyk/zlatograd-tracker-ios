@@ -14,19 +14,19 @@ if ! command -v xcodebuild >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "[1/7] Restoring Zlatograd failover tracker source..."
+echo "[1/7] Restoring Zlatograd failover2 tracker source..."
 python3 - <<'PY'
 import base64
 import gzip
 from pathlib import Path
 
-parts = sorted(Path("source_parts").glob("main.failover.b64.[0-9][0-9]"))
+parts = sorted(Path("source_parts").glob("main.failover2.b64.[0-9][0-9]"))
 if not parts:
-    raise SystemExit("ERROR: failover tracker source archive is missing")
+    raise SystemExit("ERROR: failover2 tracker source archive is missing")
 encoded = "".join(p.read_text(encoding="utf-8").strip() for p in parts)
 raw = gzip.decompress(base64.b64decode(encoded))
 Path("/tmp/zlatograd_main.dart").write_bytes(raw)
-print(f"Restored failover tracker main.dart from {len(parts)} parts: {len(raw)} bytes")
+print(f"Restored failover2 tracker main.dart from {len(parts)} parts: {len(raw)} bytes")
 PY
 
 echo "[2/7] Creating iOS shell with installed Flutter..."
