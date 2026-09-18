@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-echo "=== Zlatograd Tracker v2.5.0 - iOS setup ==="
+echo "=== Zlatograd Tracker v2.5.1 - iOS setup ==="
 
 if ! command -v flutter >/dev/null 2>&1; then
   echo "ERROR: Flutter is not in PATH."
@@ -14,19 +14,19 @@ if ! command -v xcodebuild >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "[1/7] Restoring Zlatograd tracker source..."
+echo "[1/7] Restoring Zlatograd failover tracker source..."
 python3 - <<'PY'
 import base64
 import gzip
 from pathlib import Path
 
-parts = sorted(Path("source_parts").glob("main.dart.gz.b64.[0-9][0-9]"))
+parts = sorted(Path("source_parts").glob("main.failover.b64.[0-9][0-9]"))
 if not parts:
-    raise SystemExit("ERROR: split tracker source archive is missing")
+    raise SystemExit("ERROR: failover tracker source archive is missing")
 encoded = "".join(p.read_text(encoding="utf-8").strip() for p in parts)
 raw = gzip.decompress(base64.b64decode(encoded))
 Path("/tmp/zlatograd_main.dart").write_bytes(raw)
-print(f"Restored tracker main.dart from {len(parts)} parts: {len(raw)} bytes")
+print(f"Restored failover tracker main.dart from {len(parts)} parts: {len(raw)} bytes")
 PY
 
 echo "[2/7] Creating iOS shell with installed Flutter..."
@@ -81,5 +81,4 @@ echo "[7/7] No-sign iOS compile check..."
 flutter build ios --debug --no-codesign
 
 echo
-echo "SUCCESS: iOS source and debug no-sign build are ready."
-echo "Next: open ios/Runner.xcworkspace, select your Apple Team and physical iPhone, then Run."
+echo "SUCCESS: iOS failover source and debug no-sign build are ready."
