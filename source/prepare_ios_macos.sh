@@ -20,12 +20,13 @@ import base64
 import gzip
 from pathlib import Path
 
-archive = Path("source_parts/main.dart.gz.b64")
-if not archive.exists():
-    raise SystemExit("ERROR: source_parts/main.dart.gz.b64 is missing")
-raw = gzip.decompress(base64.b64decode(archive.read_text(encoding="utf-8")))
+parts = sorted(Path("source_parts").glob("main.dart.gz.b64.[0-9][0-9]"))
+if not parts:
+    raise SystemExit("ERROR: split tracker source archive is missing")
+encoded = "".join(p.read_text(encoding="utf-8").strip() for p in parts)
+raw = gzip.decompress(base64.b64decode(encoded))
 Path("/tmp/zlatograd_main.dart").write_bytes(raw)
-print(f"Restored tracker main.dart: {len(raw)} bytes")
+print(f"Restored tracker main.dart from {len(parts)} parts: {len(raw)} bytes")
 PY
 
 echo "[2/7] Creating iOS shell with installed Flutter..."
