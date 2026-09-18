@@ -82,7 +82,8 @@ with path.open("wb") as f:
 print("Info.plist updated successfully")
 PY
 
-echo "[5/7] Formatting Dart..."
+echo "[5/7] Applying Dart fixes and formatting..."
+dart fix --apply
 dart format lib
 
 echo "[6/7] Flutter analyze..."
