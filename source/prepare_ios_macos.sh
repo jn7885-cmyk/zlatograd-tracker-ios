@@ -32,6 +32,17 @@ PY
 echo "[2/7] Creating iOS shell with installed Flutter..."
 flutter create --platforms=ios --org bg.zlatograd --project-name zlatograd_tracker .
 cp /tmp/zlatograd_main.dart lib/main.dart
+python3 - <<'PY'
+from pathlib import Path
+
+p = Path("lib/main.dart")
+s = p.read_text(encoding="utf-8")
+old = "    if (!discoveredServers.contains(text)) discoveredServers.add(text);\n"
+new = "    if (!discoveredServers.contains(text)) {\n      discoveredServers.add(text);\n    }\n"
+if old in s:
+    s = s.replace(old, new)
+p.write_text(s, encoding="utf-8")
+PY
 rm -f test/widget_test.dart
 
 echo "[3/7] Resolving Flutter packages..."
